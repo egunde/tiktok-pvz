@@ -4,22 +4,22 @@ An app that spawns zombies in Plants vs Zombies (PvZ) during a TikTok Live. Simp
 To use:
 1. Clone the project to Visual Studio.
 2. Modify the StartupPath
-    - Navigate to the file PVZProcess.cs under the project IntelOrca.PvZTools
-    - The value for StartupPath should be the root folder of your game which contains the .exe
-    ```cs
-    internal PvZProcess()
-    {
-        (string? path, bool goty) = GetInstallLocation(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall", wow6432node: true);
-	      if (path is null)
-	      {
-		      (path, goty) = GetInstallLocation(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", wow6432node: false);
-		      //if (path is null) throw new NullReferenceException("Could not find a Plants vs. Zombies installation.");
-	      }
-
-	      GOTY = goty;
-	      StartupPath = "D:\\Games\\Plants vs. Zombies 1.0.0.1051 EN";
-    }
-    ```
+	- Navigate to the file PVZProcess.cs under the project IntelOrca.PvZTools
+	- The value for StartupPath should be the root folder of your game which contains the .exe
+	```cs
+	internal PvZProcess()
+	{
+	    (string? path, bool goty) = GetInstallLocation(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall", wow6432node: true);
+	    if (path is null)
+	    {
+	        (path, goty) = GetInstallLocation(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", wow6432node: false);
+		//if (path is null) throw new NullReferenceException("Could not find a Plants vs. Zombies installation.");
+	    }
+		
+	    GOTY = goty;
+	    StartupPath = "D:\\Games\\Plants vs. Zombies 1.0.0.1051 EN";
+	}
+	```
 3. Launch the project and PvZ (any order)
 4. Enter a username in the appropriate console window
 5. Wait for gifts!
