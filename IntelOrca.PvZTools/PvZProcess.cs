@@ -15,12 +15,13 @@ namespace IntelOrca.PvZTools
 			if (path is null)
 			{
 				(path, goty) = GetInstallLocation(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", wow6432node: false);
-				if (path is null) throw new NullReferenceException("Could not find a Plants vs. Zombies installation.");
+				//if (path is null) throw new NullReferenceException("Could not find a Plants vs. Zombies installation.");
 			}
 
 			GOTY = goty;
-			StartupPath = path;
-		}
+			StartupPath = "D:\\Games\\Plants vs. Zombies 1.0.0.1051 EN";
+
+        }
 
         readonly string[] displayNames = new string[] { "Plants vs. Zombies", "Plants vs. Zombies SDR" };
         readonly string gotyName = "Plants vs. Zombies: Game of the Year";

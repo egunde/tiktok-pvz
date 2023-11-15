@@ -4,7 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO.Pipes;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace IntelOrca.PvZTools
 {
@@ -15,6 +21,9 @@ namespace IntelOrca.PvZTools
 		ZombieProbabilityForm mZPF = new ZombieProbabilityForm();
 
 		Random mRand = new Random();
+
+        int totalLikes = 0;
+        int currentLikes = 0;
 
 		public MainForm()
 		{
@@ -28,10 +37,10 @@ namespace IntelOrca.PvZTools
 				Environment.Exit(1);
 			}
 
-			InitializeComponent();
+
+            InitializeComponent();
 
 			this.Icon = Resources.orca_icon;
-			MessageBox.Show("PvZ Tools will only work for the original version of Plants vs. Zombies. You will have to obtain this yourself. In the likely case that this program does not work for you, it is probably because you have the wrong version. I am unable to stop the game from spawning level zombies at this time. The source code for this can be found on GitHub (https://github.com/IntelOrca/PVZTools)", "Message from the author");
 
 			chkPool.Checked = true;
 
@@ -44,10 +53,144 @@ namespace IntelOrca.PvZTools
 
 			//CreateSliderGroup();
 
-			UpdateStatus();
+			ReceiveGiftData();
+			Console.WriteLine("Interact or Gift to Spawn Zombies");
+            Console.WriteLine("Every 250 Total likes a zombie will spawn");
+
+            UpdateStatus();
 		}
 
-		private void SpawnZombie()
+		private void ReceiveGiftData()
+		{
+			Task.Run(() =>
+			{
+				using (NamedPipeServerStream pipeServer = new NamedPipeServerStream("PIPE", PipeDirection.In))
+				{
+					while (true)
+					{
+						pipeServer.WaitForConnection();
+
+						byte[] dataBytes = new byte[1024];
+						int bytesRead = pipeServer.Read(dataBytes, 0, dataBytes.Length);
+						string data = Encoding.UTF8.GetString(dataBytes, 0, bytesRead);
+
+						ProcessPipeData(data);
+
+						pipeServer.Disconnect();
+					}
+				}
+			});
+		}
+
+        //Takes pipe data, sends console message, and spawns the appropriate zombie
+        //data should be [type cost sender giftName] <-for gift, rest are [code sender|likeAmount]
+        private void ProcessPipeData(string data)
+		{
+            //Console.WriteLine(data);
+            string[] splitData = data.Split(' ');
+			string type = splitData[0];
+            string cost = splitData[1];
+			string sender = "";
+            string name = "";
+            if (splitData.Length > 2)
+			{
+				sender = splitData[2];
+				name = splitData[3];
+				for (int i = 4; i < splitData.Length; i++)
+				{
+					name += " " + splitData[i];
+				} 
+			}
+            int typeNumber = int.Parse(type);
+            switch (typeNumber)
+            {
+
+                //On Join
+                case -3:
+                    SpawnZombieByNumber(4);
+                    SetConsoleColor(ConsoleColor.Yellow);
+                    Console.WriteLine($"{cost} joined!");
+                    Console.WriteLine($"Spawning:Buckethead");
+                    Console.WriteLine($"==================================");
+                    SetConsoleColor(ConsoleColor.White);
+                    break;
+                //On Share
+                case -2:
+                    SpawnZombieByNumber(29);
+                    SetConsoleColor(ConsoleColor.Yellow);
+                    Console.WriteLine($"{cost} shared! Thank You!!");
+                    Console.WriteLine($"Spawning:Peashooter Zombie");
+                    Console.WriteLine($"==================================");
+                    SetConsoleColor(ConsoleColor.White);
+                    break;
+                //On Follow
+                case -1:
+                    SpawnZombieByNumber(29);
+                    SetConsoleColor(ConsoleColor.Yellow);
+                    Console.WriteLine($"{cost} followed! Thank You!!");
+                    Console.WriteLine($"Spawning:Gatling Zombie");
+                    Console.WriteLine($"==================================");
+                    SetConsoleColor(ConsoleColor.White);
+                    break;
+				//On Like
+                case 0:
+                    totalLikes += int.Parse(splitData[1]);
+                    currentLikes += int.Parse(splitData[1]);
+                    if (currentLikes > 250)
+                    {
+                        SpawnZombieByNumber(26);
+                        SetConsoleColor(ConsoleColor.White);
+                        Console.WriteLine($"Likes:{totalLikes} Spawning:Peashooter");
+                        Console.WriteLine($"==================================");
+                        SetConsoleColor(ConsoleColor.White);
+                        currentLikes = 0;
+                    }
+                    break;
+				//On Gift
+				default:
+					string zombieName = SpawnZombieByCost(int.Parse(splitData[1]));
+                    SetConsoleColor(ConsoleColor.Cyan);
+                    Console.WriteLine($"THANK YOU: {sender}");
+                    Console.WriteLine($"Gift:{name} Spawning:{zombieName}");
+                    Console.WriteLine($"==================================");
+                    SetConsoleColor(ConsoleColor.White);
+                    break;
+            }
+        }
+
+        private static void SetConsoleColor(ConsoleColor color)
+        {
+            if (Console.ForegroundColor != color)
+                Console.ForegroundColor = color;
+        }
+
+		private List<(Func<int, bool> Condition, (int, string) Value)> conditions =
+			new List<(Func<int, bool> Condition, (int, string) Value)>
+			{
+				(x => x == 1, (7, "Football")),
+				(x => x == 5, (8, "Dancer")),
+                (x => x == 10, (22, "Catapult")),
+                (x => x == 20, (12, "Zomboni")),
+                (x => x == 30, (19, "Yeti")),
+                (x => x == 99, (23, "Gargantuar")),
+                (x => x == 100, (32, "Giga-Gargantuar")),
+                (x => x >= 500, (25, "Dr. Zomboss")),
+				(x => x < 1, (0, "Normal")),
+            };
+
+        private string SpawnZombieByCost(int cost)
+        {
+            var value = conditions.First(tuple => tuple.Condition(cost));
+            mSpawner!.Spawn(value.Item2.Item1, GetRandomRowFromSelection(value.Item2.Item1));
+			return value.Item2.Item2;
+        }
+
+        private void SpawnZombieByNumber(int number)
+		{
+			mSpawner!.Spawn(number, GetRandomRowFromSelection(number));
+		}
+
+        private void SpawnZombie()
 		{
 			int zombieType;
 			if (rdoProbability.Checked)
