@@ -24,7 +24,7 @@ To use:
 4. Enter a username in the appropriate console window
 5. Wait for gifts!
 
-The purpose of two console windows is to allow for either or both window(s) to be displayed on your stream.
+The two consoles that appear are from the original projects this is based on.
 The console that says "Interact or Gift to Spawn Zombies" will display who interacted and what zombie is spawning.
 The console that asks for username will display the "yoChat", which will display who typed "/yo" and how many times they've said it. 
 The yoChat is designed to encourage comments, which will boost interaction and promote your stream.
