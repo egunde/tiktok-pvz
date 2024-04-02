@@ -1,4 +1,7 @@
 # tiktok-pvz
+
+## **[Demo](https://youtu.be/8XMRuGicSDk?si=XcVbBNrVW6MkWtBf)**
+
 An app that spawns zombies in Plants vs Zombies (PvZ) during a TikTok Live. Simply start the project, enter your TikTok Live username, and wait for gifts.
 
 To use:
