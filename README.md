@@ -1,5 +1,8 @@
 # tiktok-pvz
 
+> [!WARNING]  
+> This project currently does not connect to the TikTok livestream. One of the libraries has a [bug](https://github.com/frankvHoof93/TikTokLiveSharp/issues/95) that claims your IP is blocked from TikTok.
+
 ## **[Demo](https://youtu.be/8XMRuGicSDk?si=XcVbBNrVW6MkWtBf)**
 
 An app that spawns zombies in Plants vs Zombies (PvZ) during a TikTok Live. Simply start the project, enter your TikTok Live username, and wait for gifts.
